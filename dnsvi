@@ -1,0 +1,102 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use File::Temp qw(tempfile);
+
+my $zone = shift || die "Usage: $0 <zone>\n";
+
+my ($fh, $filename) = tempfile( "$zone.XXXXXX", TMPDIR => 1, UNLINK => 1 );
+my %data;
+my ($rrsigs, $nsecs) = (0, 0);
+
+# dirac.df7cb.de. 7200 IN CNAME dirac.dyn.df7cb.de.
+open F, "dig \@ns.df7cb.de -t axfr $zone |";
+while (my $line = <F>) {
+	chomp $line;
+	my ($name, $ttl, $class, $type, $data) = split /\s+/, $line, 5;
+	if ($line =~ /^;/ or not defined $data) { # non-RR lines
+		print $fh "$line\n";
+		next;
+	}
+	if ($type eq 'RRSIG') {
+		$rrsigs++;
+		next;
+	} elsif ($type eq 'NSEC') {
+		$nsecs++;
+		next;
+	}
+	if ($name eq "$zone.") {
+		$name = '@';
+		$line =~ s/^\Q$zone\E\.\t/@\t/;
+	} else {
+		$name =~ s/\.\Q$zone\E\.$//;
+		$line =~ s/\.\Q$zone\E\.\t/\t/;
+	}
+	print $fh "$line\n";
+	$data{$name}->{$class}->{$type}->{$data}->{1} = $ttl;
+}
+print $fh ";; Records omitted: $rrsigs RRSIG, $nsecs NSEC\n";
+close $fh;
+close F;
+
+my $mtime = (stat $filename)[9];
+$ENV{EDITOR} ||= 'vi';
+system "$ENV{EDITOR} $filename";
+
+if ((stat $filename)[9] == $mtime) {
+	print "No change.\n";
+	exit 0;
+}
+
+my %rr2;
+open F, $filename or die "$filename: $!";
+while (my $line = <F>) {
+	chomp $line;
+	my ($name, $ttl, $class, $type, $data) = split /\s+/, $line, 5;
+	if ($line =~ /^;/ or not defined $data) { # non-RR lines
+		next;
+	}
+	$data{$name}->{$class}->{$type}->{$data}->{2} = $ttl;
+}
+close F;
+
+my @cmds;
+foreach my $name (sort keys %data) {
+	my $fqdn = $name;
+	$fqdn .= ".$zone." unless ($fqdn =~ /\.$/);
+	foreach my $class (sort keys %{$data{$name}}) {
+		foreach my $type (sort keys %{$data{$name}->{$class}}) {
+			my $rrset = $data{$name}->{$class}->{$type};
+			foreach my $data (sort keys %$rrset) {
+				my $rr = $rrset->{$data};
+				if (exists $rr->{1} and exists $rr->{2} and $rr->{1} == $rr->{2}) {
+					# nothing to do
+					next;
+				}
+				if (exists $rr->{1}) { # removed (or changed)
+					push @cmds, "update delete $fqdn $class $type $data\n";
+				}
+				if (exists $rr->{2}) { # added (or changed)
+					push @cmds, "update add    $fqdn $rr->{2} $class $type $data\n";
+				}
+			}
+		}
+	}
+}
+
+unless (@cmds) {
+	print "No change.\n";
+	exit 0;
+}
+#unshift @cmds, "zone $zone.\n";
+push @cmds, "send\nanswer\n\n";
+
+print @cmds;
+print "Send? [y] ";
+my $response = <STDIN>;
+if ($response =~ /^(y|$)/) {
+	open F, "| nsupdate -k dyn.df7cb.de.key";
+	print F $_ foreach (@cmds);
+	close F;
+}
