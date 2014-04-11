@@ -23,17 +23,50 @@
 use strict;
 use warnings;
 use File::Temp qw(tempfile);
+use Getopt::Long;
 
-my $zone = shift || die "Usage: $0 <zone>\n";
+## option parsing
+
+sub usage {
+	my $exit = shift;
+	print "Usage: $0 [-k keyfile] [\@nameserver] <zone>\n";
+	exit $exit;
+}
+
+my $keyfile = '';
+my $nameserver = '';
+
+Getopt::Long::config('bundling');
+if (!GetOptions (
+		'-h'              =>  sub { usage(0) },
+		'--help'          =>  sub { usage(0) },
+		'-k=s'            =>  \$keyfile,
+		'--key-file=s'    =>  \$keyfile,
+	)) {
+	usage(1);
+};
+
+$keyfile = "-k $keyfile" if ($keyfile);
+
+if (@ARGV > 0 and $ARGV[0] =~ /^(@.+)/) {
+	$nameserver = $1;
+	shift;
+}
+if (@ARGV != 1) {
+	usage(1);
+}
+my $zone = shift;
+
+## main
 
 my ($fh, $filename) = tempfile( "$zone.XXXXXX", TMPDIR => 1, UNLINK => 1 );
 my %data;
 my ($rrsigs, $nsecs) = (0, 0);
 
-# dirac.df7cb.de. 7200 IN CNAME dirac.dyn.df7cb.de.
-open F, "dig \@ns.df7cb.de -t axfr $zone |";
+open F, "dig $nameserver -t axfr $zone |";
 while (my $line = <F>) {
 	chomp $line;
+	# dirac.df7cb.de. 7200 IN CNAME dirac.dyn.df7cb.de.
 	my ($name, $ttl, $class, $type, $data) = split /\s+/, $line, 5;
 	if ($line =~ /^;/ or not defined $data) { # non-RR lines
 		print $fh "$line\n";
@@ -116,7 +149,7 @@ print @cmds;
 print "Send? [y] ";
 my $response = <STDIN>;
 if ($response =~ /^(y|$)/) {
-	open F, "| nsupdate -k dyn.df7cb.de.key";
+	open F, "| nsupdate $keyfile";
 	print F $_ foreach (@cmds);
 	close F;
 }
