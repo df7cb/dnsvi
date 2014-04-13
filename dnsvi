@@ -48,7 +48,7 @@ if (!GetOptions (
 
 $keyfile = "-k $keyfile" if ($keyfile);
 
-if (@ARGV > 0 and $ARGV[0] =~ /^(@.+)/) {
+if (@ARGV > 0 and $ARGV[0] =~ /^@(.+)/) {
 	$nameserver = $1;
 	shift;
 }
@@ -98,6 +98,7 @@ sub parse ($$)
 sub load ($$$$;$)
 {
 	my ($zone, $d, $key, $fh, $fh_out) = @_;
+	my $rrs = 0;
 	while (my $line = <$fh>) {
 		chomp $line;
 		# dirac.df7cb.de. 7200 IN CNAME dirac.dyn.df7cb.de.
@@ -109,9 +110,11 @@ sub load ($$$$;$)
 		next unless (defined $data);
 		$d->{$name}->{$class}->{$type}->{$data}->{$key} = $ttl;
 		print $fh_out "$line2\n" if ($fh_out);
+		$rrs++;
 	}
 	close $fh;
 	close $fh_out if ($fh_out);
+	return $rrs;
 }
 
 sub compare ($$$$)
@@ -150,8 +153,15 @@ my ($fh, $filename) = tempfile( "$zone.XXXXXX", TMPDIR => 1, UNLINK => 1 );
 my $d = {};
 my ($key1, $key2) = (1, 2);
 
-open F, "dig $nameserver -t axfr $zone |";
-load ($zone, $d, $key1, *F, $fh);
+open F, "dig " . ($nameserver ? "\@$nameserver " : "") . "$keyfile -t AXFR $zone |";
+my $rrs = load ($zone, $d, $key1, *F, $fh);
+my $rc = $? >> 8;
+if ($rrs == 0 or $rc > 0) {
+	open F, $filename;
+	print STDERR <F>;
+	close F;
+	exit ($rc || 1);
+}
 
 do {
 	my $mtime = (stat $filename)[9];
@@ -172,6 +182,7 @@ do {
 		print "No change.\n";
 		exit 0;
 	}
+	unshift @$cmds, "server $nameserver\n" if ($nameserver);
 	push @$cmds, "send\nanswer\n\n";
 	print "nsupdate commands queued:\n";
 	print @$cmds;
