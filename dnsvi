@@ -89,7 +89,7 @@ sub parse ($$)
 		print STDERR "Couldn't parse line $.: $line\n";
 		return undef;
 	}
-	if ($type =~ /^(RRSIG|NSEC)$/) {
+	if ($type =~ /^(RRSIG|NSEC|NSEC3)$/) {
 		return undef;
 	}
 	if ($name eq "$zone.") {
