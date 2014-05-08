@@ -46,8 +46,6 @@ if (!GetOptions (
 	usage(1);
 };
 
-$keyfile = "-k $keyfile" if ($keyfile);
-
 if (@ARGV > 0 and $ARGV[0] =~ /^@(.+)/) {
 	$nameserver = $1;
 	shift;
@@ -56,6 +54,13 @@ if (@ARGV != 1) {
 	usage(1);
 }
 my $zone = shift;
+
+my @dig = ("dig", "-t", "AXFR", $zone);
+push @dig, "\@$nameserver" if ($nameserver);
+push @dig, "-k", $keyfile if ($keyfile);
+
+my @nsupdate = qw(nsupdate);
+push @nsupdate, "-k", $keyfile if ($keyfile);
 
 ## functions
 
@@ -153,7 +158,7 @@ my ($fh, $filename) = tempfile( "$zone.XXXXXX", TMPDIR => 1, UNLINK => 1 );
 my $d = {};
 my ($key1, $key2) = (1, 2);
 
-open F, "dig " . ($nameserver ? "\@$nameserver " : "") . "$keyfile -t AXFR $zone |";
+open F, "-|", @dig;
 my $rrs = load ($zone, $d, $key1, *F, $fh);
 my $rc = $? >> 8;
 if ($rrs == 0 or $rc > 0) {
@@ -192,7 +197,7 @@ do {
 	print "\n";
 
 	if ($response =~ /^(s|y|$)/i) {
-		open F, "| nsupdate $keyfile";
+		open F, "|-", @nsupdate;
 		print F @$cmds;
 		close F;
 		my $rc = $? >> 8;
@@ -202,7 +207,7 @@ do {
 		print "\n";
 	} elsif ($response =~ /^e/i) {
 	} elsif ($response =~ /^a/i) {
-		open F, "| nsupdate $keyfile";
+		open F, "|-", @nsupdate;
 		print F @$cmds;
 		close F;
 		my $rc = $? >> 8;
