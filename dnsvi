@@ -29,11 +29,12 @@ use Getopt::Long;
 
 sub usage {
 	my $exit = shift;
-	print "Usage: $0 [-k keyfile] [\@nameserver] <zone>\n";
+	print "Usage: $0 [-l] [-k keyfile] [\@nameserver] <zone>\n";
 	exit $exit;
 }
 
 my $keyfile = '';
+my $local;
 my $nameserver;
 
 Getopt::Long::config('bundling');
@@ -42,6 +43,7 @@ if (!GetOptions (
 		'--help'          =>  sub { usage(0) },
 		'-k=s'            =>  \$keyfile,
 		'--key-file=s'    =>  \$keyfile,
+		'-l'              =>  \$local,
 	)) {
 	usage(1);
 };
@@ -57,11 +59,11 @@ my $zone = shift;
 
 my @dig = ("dig", "-t", "AXFR", "+nostats", $zone);
 push @dig, "\@$nameserver" if ($nameserver);
-push @dig, "\@localhost" unless ($nameserver);
+push @dig, "\@localhost" if ($local);
 push @dig, "-k", $keyfile if ($keyfile);
 
 my @nsupdate = qw(nsupdate);
-push @nsupdate, "-l" unless ($nameserver);
+push @nsupdate, "-l" if ($local);
 push @nsupdate, "-k", $keyfile if ($keyfile);
 
 ## functions
