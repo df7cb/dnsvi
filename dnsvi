@@ -55,7 +55,7 @@ if (@ARGV != 1) {
 }
 my $zone = shift;
 
-my @dig = ("dig", "-t", "AXFR", $zone);
+my @dig = ("dig", "-t", "AXFR", "+nostats", $zone);
 push @dig, "\@$nameserver" if ($nameserver);
 push @dig, "\@localhost" unless ($nameserver);
 push @dig, "-k", $keyfile if ($keyfile);
