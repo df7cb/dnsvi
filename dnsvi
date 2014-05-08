@@ -172,8 +172,8 @@ if ($rrs == 0 or $rc > 0) {
 
 do {
 	my $mtime = (stat $filename)[9];
-	$ENV{EDITOR} ||= 'vi';
-	system "$ENV{EDITOR} $filename";
+	my $editor = $ENV{EDITOR} || 'sensible-editor';
+	system $editor, $filename;
 
 	if ((stat $filename)[9] == $mtime) {
 		print "No change.\n";
