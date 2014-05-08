@@ -34,7 +34,7 @@ sub usage {
 }
 
 my $keyfile = '';
-my $nameserver = '';
+my $nameserver;
 
 Getopt::Long::config('bundling');
 if (!GetOptions (
@@ -57,9 +57,11 @@ my $zone = shift;
 
 my @dig = ("dig", "-t", "AXFR", $zone);
 push @dig, "\@$nameserver" if ($nameserver);
+push @dig, "\@localhost" unless ($nameserver);
 push @dig, "-k", $keyfile if ($keyfile);
 
 my @nsupdate = qw(nsupdate);
+push @nsupdate, "-l" unless ($nameserver);
 push @nsupdate, "-k", $keyfile if ($keyfile);
 
 ## functions
