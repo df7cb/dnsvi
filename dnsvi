@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (c) 2014 Christoph Berg <myon@debian.org>
+# Copyright (c) 2014-2015 Christoph Berg <myon@debian.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -96,10 +96,10 @@ sub parse ($$)
 	}
 	if ($name eq "$zone.") {
 		$name = '@';
-		$line =~ s/^\Q$zone\E\.\t/@\t/;
+		$line =~ s/^\Q$zone\E\.\s/@\t/;
 	} else {
 		$name =~ s/\.\Q$zone\E\.$//;
-		$line =~ s/\.\Q$zone\E\.\t/\t/;
+		$line =~ s/\.\Q$zone\E\.\s/\t/;
 	}
 	return ($line, $name, $ttl, $class, $type, $data);
 }
