@@ -91,7 +91,8 @@ sub parse ($$)
 		print STDERR "Couldn't parse line $.: $line\n";
 		return undef;
 	}
-	if ($type =~ /^(RRSIG|NSEC|NSEC3)$/) {
+	if ($type =~ /^(RRSIG|NSEC|NSEC3|TSIG|TYPE65534)$/) {
+		# ignore signatures that are generated automatically anyway
 		return undef;
 	}
 	if ($name eq "$zone.") {
