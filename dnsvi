@@ -57,6 +57,7 @@ if (@ARGV != 1) {
 	usage(1);
 }
 my $zone = shift;
+$zone =~ s/\.$//; # remove trailing dot
 
 my @dig = ("dig", "-t", "AXFR", "+nostats", $zone);
 push @dig, "\@$nameserver" if ($nameserver);
