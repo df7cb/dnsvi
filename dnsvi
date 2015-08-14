@@ -68,6 +68,7 @@ push @nsupdate, "-k", $keyfile if ($keyfile);
 
 ## functions
 
+# remove all $keys from d
 sub prune ($$)
 {
 	my ($d, $key) = @_;
@@ -83,6 +84,7 @@ sub prune ($$)
 	}
 }
 
+# parse one AXFR output line, return interesting lines (or undef)
 sub parse ($$)
 {
 	my ($zone, $line) = @_;
@@ -105,26 +107,61 @@ sub parse ($$)
 	return ($line, $name, $ttl, $class, $type, $data);
 }
 
-sub load ($$$$;$)
+# load AXFR output
+sub load_file ($$$$)
 {
-	my ($zone, $d, $key, $fh, $fh_out) = @_;
+	my ($zone, $d, $key, $fh) = @_;
 	my $rrs = 0;
 	while (my $line = <$fh>) {
 		chomp $line;
 		# dirac.df7cb.de. 7200 IN CNAME dirac.dyn.df7cb.de.
-		if ($line =~ /^(;|$)/) {
-			print $fh_out "$line\n" if ($fh_out);
-			next;
-		}
+		next if ($line =~ /^(;|$)/);
 		my ($line2, $name, $ttl, $class, $type, $data) = parse ($zone, $line);
 		next unless (defined $data);
 		$d->{$name}->{$class}->{$type}->{$data}->{$key} = $ttl;
-		print $fh_out "$line2\n" if ($fh_out);
 		$rrs++;
 	}
 	close $fh;
-	close $fh_out if ($fh_out);
 	return $rrs;
+}
+
+sub write_file ($$$)
+{
+	my ($d, $key, $fh_out) = @_;
+	my ($name_w, $class_w, $type_w, $ttl_w) = (1, 1, 1, 1);
+
+	print $fh_out "; vim:ft=bindzone:\n";
+
+	# calculate lengths of output columns
+	foreach my $name (sort keys %$d) {
+		$name_w = length $name if (length $name > $name_w);
+		foreach my $class (sort keys %{$d->{$name}}) {
+			$class_w = length $class if (length $class > $class_w);
+			foreach my $type (sort keys %{$d->{$name}->{$class}}) {
+				$type_w = length $type if (length $type > $type_w);
+				foreach my $data (sort keys %{$d->{$name}->{$class}->{$type}}) {
+					next unless (exists $d->{$name}->{$class}->{$type}->{$data}->{$key});
+					my $ttl = $d->{$name}->{$class}->{$type}->{$data}->{$key};
+					$ttl_w = length $ttl if (length $ttl > $ttl_w);
+				}
+			}
+		}
+	}
+
+	foreach my $name (sort keys %$d) {
+		foreach my $class (sort keys %{$d->{$name}}) {
+			foreach my $type (sort keys %{$d->{$name}->{$class}}) {
+				foreach my $data (sort keys %{$d->{$name}->{$class}->{$type}}) {
+					next unless (exists $d->{$name}->{$class}->{$type}->{$data}->{$key});
+					my $ttl = $d->{$name}->{$class}->{$type}->{$data}->{$key};
+					printf $fh_out "%-${name_w}s %-${ttl_w}s %-${class_w}s %-${type_w}s %s\n",
+						$name, $ttl, $class, $type, $data;
+				}
+			}
+		}
+	}
+
+	close $fh_out;
 }
 
 sub compare ($$$$)
@@ -164,7 +201,7 @@ my $d = {};
 my ($key1, $key2) = (1, 2);
 
 open F, "-|", @dig;
-my $rrs = load ($zone, $d, $key1, *F, $fh);
+my $rrs = load_file ($zone, $d, $key1, *F);
 my $rc = $? >> 8;
 if ($rrs == 0 or $rc > 0) {
 	open F, $filename;
@@ -172,6 +209,7 @@ if ($rrs == 0 or $rc > 0) {
 	close F;
 	exit ($rc || 1);
 }
+write_file ($d, $key1, $fh);
 
 do {
 	my $mtime = (stat $filename)[9];
@@ -184,7 +222,7 @@ do {
 	}
 
 	open F, $filename or die "$filename: $!";
-	load ($zone, $d, $key2, *F);
+	load_file ($zone, $d, $key2, *F);
 
 	my $cmds = compare ($zone, $d, $key1, $key2);
 
