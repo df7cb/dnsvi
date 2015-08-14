@@ -132,7 +132,7 @@ sub write_file ($$$)
 	my ($d, $key, $fh_out) = @_;
 	my ($name_w, $class_w, $type_w, $ttl_w) = (1, 1, 1, 1);
 
-	print $fh_out "; vim:ft=bindzone:\n";
+	print $fh_out "; $zone - vim:ft=bindzone:\n";
 
 	# calculate lengths of output columns
 	foreach my $name (keys %$d) {
