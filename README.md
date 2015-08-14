@@ -9,6 +9,7 @@ feed to nsupdate.
 Dependencies:
 
   * perl
+  * Sort::Naturally (Debian: libsort-naturally-perl)
   * dig, nsupdate (Debian: dnsutils)
   * some $EDITOR (Default: vi)
 

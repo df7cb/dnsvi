@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use File::Temp qw(tempfile);
 use Getopt::Long;
+use Sort::Naturally;
 
 ## option parsing
 
@@ -72,11 +73,11 @@ push @nsupdate, "-k", $keyfile if ($keyfile);
 sub prune ($$)
 {
 	my ($d, $key) = @_;
-	foreach my $name (sort keys %$d) {
-		foreach my $class (sort keys %{$d->{$name}}) {
-			foreach my $type (sort keys %{$d->{$name}->{$class}}) {
+	foreach my $name (keys %$d) {
+		foreach my $class (keys %{$d->{$name}}) {
+			foreach my $type (keys %{$d->{$name}->{$class}}) {
 				my $rrset = $d->{$name}->{$class}->{$type};
-				foreach my $data (sort keys %$rrset) {
+				foreach my $data (keys %$rrset) {
 					delete $rrset->{$data}->{$key};
 				}
 			}
@@ -133,13 +134,13 @@ sub write_file ($$$)
 	print $fh_out "; vim:ft=bindzone:\n";
 
 	# calculate lengths of output columns
-	foreach my $name (sort keys %$d) {
+	foreach my $name (keys %$d) {
 		$name_w = length $name if (length $name > $name_w);
-		foreach my $class (sort keys %{$d->{$name}}) {
+		foreach my $class (keys %{$d->{$name}}) {
 			$class_w = length $class if (length $class > $class_w);
-			foreach my $type (sort keys %{$d->{$name}->{$class}}) {
+			foreach my $type (keys %{$d->{$name}->{$class}}) {
 				$type_w = length $type if (length $type > $type_w);
-				foreach my $data (sort keys %{$d->{$name}->{$class}->{$type}}) {
+				foreach my $data (keys %{$d->{$name}->{$class}->{$type}}) {
 					next unless (exists $d->{$name}->{$class}->{$type}->{$data}->{$key});
 					my $ttl = $d->{$name}->{$class}->{$type}->{$data}->{$key};
 					$ttl_w = length $ttl if (length $ttl > $ttl_w);
@@ -148,10 +149,10 @@ sub write_file ($$$)
 		}
 	}
 
-	foreach my $name (sort keys %$d) {
-		foreach my $class (sort keys %{$d->{$name}}) {
-			foreach my $type (sort keys %{$d->{$name}->{$class}}) {
-				foreach my $data (sort keys %{$d->{$name}->{$class}->{$type}}) {
+	foreach my $name (nsort keys %$d) {
+		foreach my $class (nsort keys %{$d->{$name}}) {
+			foreach my $type (nsort keys %{$d->{$name}->{$class}}) {
+				foreach my $data (nsort keys %{$d->{$name}->{$class}->{$type}}) {
 					next unless (exists $d->{$name}->{$class}->{$type}->{$data}->{$key});
 					my $ttl = $d->{$name}->{$class}->{$type}->{$data}->{$key};
 					printf $fh_out "%-${name_w}s %-${ttl_w}s %-${class_w}s %-${type_w}s %s\n",
@@ -168,14 +169,14 @@ sub compare ($$$$)
 {
 	my ($zone, $d, $key1, $key2) = @_;
 	my @cmds;
-	foreach my $name (sort keys %$d) {
+	foreach my $name (nsort keys %$d) {
 		my $fqdn = $name;
 		$fqdn = "$zone." if ($fqdn eq '@');
 		$fqdn .= ".$zone." unless ($fqdn =~ /\.$/);
-		foreach my $class (sort keys %{$d->{$name}}) {
-			foreach my $type (sort keys %{$d->{$name}->{$class}}) {
+		foreach my $class (nsort keys %{$d->{$name}}) {
+			foreach my $type (nsort keys %{$d->{$name}->{$class}}) {
 				my $rrset = $d->{$name}->{$class}->{$type};
-				foreach my $data (sort keys %$rrset) {
+				foreach my $data (nsort keys %$rrset) {
 					my $rr = $rrset->{$data};
 					if (exists $rr->{$key1} and exists $rr->{$key2} and $rr->{$key1} == $rr->{$key2}) {
 						# nothing to do
