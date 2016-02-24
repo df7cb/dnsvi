@@ -1,0 +1,23 @@
+Source: dnsvi
+Section: admin
+Priority: optional
+Maintainer: Christoph Berg <myon@debian.org>
+Standards-Version: 3.9.7
+Build-Depends: debhelper (>= 9)
+Homepage: https://github.com/ChristophBerg/dnsvi
+Vcs-Git: https://github.com/ChristophBerg/dnsvi.git
+Vcs-Browser: https://github.com/ChristophBerg/dnsvi
+
+Package: dnsvi
+Architecture: all
+Depends: ${shlibs:Depends},
+ ${misc:Depends},
+ dnsutils,
+ vim | editor,
+ libsort-naturally-perl,
+ sensible-utils
+Description: edit dynamic DNS zones using vi
+ dnsvi is a frontend for nsupdate. Given a DNS zone name, it uses dig -t AXFR
+ to get all the records in a zone. It then spawns your favorite editor, and
+ upon completion, builds a list of "update add" and "update delete" statements
+ to feed to nsupdate
