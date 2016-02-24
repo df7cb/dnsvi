@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (c) 2014-2015 Christoph Berg <myon@debian.org>
+# Copyright (c) 2014-2016 Christoph Berg <myon@debian.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -268,3 +268,69 @@ do {
 	}
 	prune ($d, $key2);
 } while (1);
+
+__END__
+
+=head1 NAME
+
+dnsvi - Edit dynamic DNS zones using vi
+
+=head1 SYNOPSIS
+
+B<dnsvi> [B<-l>] [B<-k> I<keyfile>] [B<@>I<nameserver>] I<zone>
+
+=head1 DESCRIPTION
+
+B<dnsvi> is a frontend for B<nsupdate>. Given a DNS zone name, it uses
+B<dig -t AXFR> to get all the records in a zone. It then spawns your favorite
+editor, and upon completion, builds a list of "B<update add>" and
+"B<update delete>" statements to feed to nsupdate.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-l>
+
+Use B<localhost> as nameserver and pass B<-l> (local) to B<nsupdate>.
+
+=item B<-k> I<keyfile>
+
+Use I<keyfile> for B<AXFR> and B<nsupdate>.
+
+=item B<@>I<nameserver>
+
+Query I<nameserver> for zone data and send updates there.
+
+=back
+
+=head1 ENVIRONMENT
+
+=over 4
+
+=item B<EDITOR>
+
+Editor to use instead of B<sensible-editor>.
+
+=back
+
+=head1 EXAMPLE
+
+ $ dnsvi -k dyn.df7cb.de.key @ns.df7cb.de dyn.df7cb.de
+ [...vi...]
+ nsupdate commands queued:
+ update delete fermi.dyn.df7cb.de. IN A 127.0.0.1
+ update add    lehmann.dyn.df7cb.de. 600 IN A 127.0.0.1
+ update add    volta.dyn.df7cb.de. 2419200 IN SSHFP 3 1 DC66C1C5E9ED611FBDF0A9E1F701B1F8C38A6C1D
+ send
+ answer
+
+ [S]end, [e]dit, send and edit [a]gain, [q]uit: [s]
+
+=head1 SEE ALSO
+
+L<dig(1)>, L<nsupdate(1)>.
+
+=head1 AUTHOR
+
+Christoph Berg L<E<lt>myon@debian.orgE<gt>>

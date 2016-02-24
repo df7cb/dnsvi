@@ -11,7 +11,7 @@ Dependencies:
   * perl
   * Sort::Naturally (Debian: libsort-naturally-perl)
   * dig, nsupdate (Debian: dnsutils)
-  * some $EDITOR (Default: vi)
+  * some $EDITOR (Default: sensible-editor)
 
 Screenshot
 ----------
