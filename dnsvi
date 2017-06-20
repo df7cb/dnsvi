@@ -30,13 +30,14 @@ use Sort::Naturally;
 
 sub usage {
 	my $exit = shift;
-	print "Usage: $0 [-l] [-k keyfile] [\@nameserver] <zone>\n";
+	print "Usage: $0 [-l] [-k keyfile] [-p port] [\@nameserver] <zone>\n";
 	exit $exit;
 }
 
 my $keyfile = '';
 my $local;
 my $nameserver;
+my $port;
 
 Getopt::Long::config('bundling');
 if (!GetOptions (
@@ -45,6 +46,8 @@ if (!GetOptions (
 		'-k=s'            =>  \$keyfile,
 		'--key-file=s'    =>  \$keyfile,
 		'-l'              =>  \$local,
+		'-p=i',           =>  \$port,
+		'--port=i',       =>  \$port,
 	)) {
 	usage(1);
 };
@@ -63,6 +66,7 @@ my @dig = ("dig", "-t", "AXFR", "+nostats", $zone);
 push @dig, "\@$nameserver" if ($nameserver);
 push @dig, "\@localhost" if ($local);
 push @dig, "-k", $keyfile if ($keyfile);
+push @dig, "-p", $port if ($port);
 
 my @nsupdate = qw(nsupdate);
 push @nsupdate, "-l" if ($local);
@@ -233,7 +237,11 @@ do {
 		exit 0;
 	}
 	unshift @$cmds, "zone $zone\n";
-	unshift @$cmds, "server $nameserver\n" if ($nameserver);
+	if ($port) {
+		unshift @$cmds, "server $nameserver $port\n" if ($nameserver);
+	} else {
+		unshift @$cmds, "server $nameserver\n" if ($nameserver);
+	}
 	push @$cmds, "send\nanswer\n\n";
 	print "nsupdate commands queued:\n";
 	print @$cmds;
@@ -298,6 +306,10 @@ Use B<localhost> as nameserver and pass B<-l> (local) to B<nsupdate>.
 =item B<-k> I<keyfile>
 
 Use I<keyfile> for B<AXFR> and B<nsupdate>.
+
+=item B<-p> I<port>
+
+Use I<port> for B<AXFR> and B<nsupdate> (default: 53).
 
 =item B<@>I<nameserver>
 
