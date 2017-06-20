@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (c) 2014-2016 Christoph Berg <myon@debian.org>
+# Copyright (c) 2014-2017 Christoph Berg <myon@debian.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -286,7 +286,7 @@ dnsvi - Edit dynamic DNS zones using vi
 
 =head1 SYNOPSIS
 
-B<dnsvi> [B<-l>] [B<-k> I<keyfile>] [B<@>I<nameserver>] I<zone>
+B<dnsvi> [B<-l>] [B<-k> I<keyfile>] [B<-p> I<port>] [B<@>I<nameserver>] I<zone>
 
 =head1 DESCRIPTION
 
@@ -332,6 +332,8 @@ Editor to use instead of B<sensible-editor>.
  $ dnsvi -k dyn.df7cb.de.key @ns.df7cb.de dyn.df7cb.de
  [...vi...]
  nsupdate commands queued:
+ server ns.df7cb.de
+ zone dyn.df7cb.de
  update delete fermi.dyn.df7cb.de. IN A 127.0.0.1
  update add    lehmann.dyn.df7cb.de. 600 IN A 127.0.0.1
  update add    volta.dyn.df7cb.de. 2419200 IN SSHFP 3 1 DC66C1C5E9ED611FBDF0A9E1F701B1F8C38A6C1D
