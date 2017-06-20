@@ -232,6 +232,7 @@ do {
 		print "No change.\n";
 		exit 0;
 	}
+	unshift @$cmds, "zone $zone\n";
 	unshift @$cmds, "server $nameserver\n" if ($nameserver);
 	push @$cmds, "send\nanswer\n\n";
 	print "nsupdate commands queued:\n";
