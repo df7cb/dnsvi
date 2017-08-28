@@ -8,7 +8,7 @@ feed to nsupdate.
 
 Usage:
 
-    ./dnsvi [-l] [-k keyfile] [-p port] [@nameserver] <zone>
+    ./dnsvi [-l] [-k keyfile] [-g] [-p port] [@nameserver] <zone>
 
 Dependencies:
 

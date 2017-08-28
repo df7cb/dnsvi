@@ -30,12 +30,13 @@ use Sort::Naturally;
 
 sub usage {
 	my $exit = shift;
-	print "Usage: $0 [-l] [-k keyfile] [-p port] [\@nameserver] <zone>\n";
+	print "Usage: $0 [-l] [-k keyfile] [-g] [-p port] [\@nameserver] <zone>\n";
 	exit $exit;
 }
 
 my $keyfile = '';
 my $local;
+my $gssapi;
 my $nameserver;
 my $port;
 
@@ -46,6 +47,8 @@ if (!GetOptions (
 		'-k=s'            =>  \$keyfile,
 		'--key-file=s'    =>  \$keyfile,
 		'-l'              =>  \$local,
+		'-g'              =>  \$gssapi,
+		'--gssapi'        =>  \$gssapi,
 		'-p=i',           =>  \$port,
 		'--port=i',       =>  \$port,
 	)) {
@@ -71,6 +74,7 @@ push @dig, "-p", $port if ($port);
 my @nsupdate = qw(nsupdate);
 push @nsupdate, "-l" if ($local);
 push @nsupdate, "-k", $keyfile if ($keyfile);
+push @nsupdate, "-g" if ($gssapi);
 
 ## functions
 
@@ -286,7 +290,7 @@ dnsvi - Edit dynamic DNS zones using vi
 
 =head1 SYNOPSIS
 
-B<dnsvi> [B<-l>] [B<-k> I<keyfile>] [B<-p> I<port>] [B<@>I<nameserver>] I<zone>
+B<dnsvi> [B<-l>] [B<-k> I<keyfile>] [B<-g>] [B<-p> I<port>] [B<@>I<nameserver>] I<zone>
 
 =head1 DESCRIPTION
 
@@ -306,6 +310,10 @@ Use B<localhost> as nameserver and pass B<-l> (local) to B<nsupdate>.
 =item B<-k> I<keyfile>
 
 Use I<keyfile> for B<AXFR> and B<nsupdate>.
+
+=item B<-g>
+
+Use B<Kerberos> credentials for B<nsupdate>. See B<-g> in B<nsupdate>(1) for details.
 
 =item B<-p> I<port>
 
