@@ -1,3 +1,10 @@
+dnsvi (1.2) unstable; urgency=medium
+
+  * Team upload.
+  * Support GSS-TSIG/Kerberos using -g. Patch by Christian Haase, thanks!
+
+ -- Christoph Berg <christoph.berg@credativ.de>  Wed, 06 Sep 2017 12:05:16 +0200
+
 dnsvi (1.1) unstable; urgency=medium
 
   * New upstream version.
