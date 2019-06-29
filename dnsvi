@@ -30,7 +30,7 @@ use Sort::Naturally;
 
 sub usage {
 	my $exit = shift;
-	print "Usage: $0 [-l] [-k keyfile] [-g] [-p port] [\@nameserver] <zone>\n";
+	print "Usage: $0 [-l] [-k keyfile] [-g] [-p port] [\@nameserver] [-i] <zone>\n";
 	exit $exit;
 }
 
@@ -39,6 +39,7 @@ my $local;
 my $gssapi;
 my $nameserver;
 my $port;
+my $noidn;
 
 Getopt::Long::config('bundling');
 if (!GetOptions (
@@ -51,6 +52,8 @@ if (!GetOptions (
 		'--gssapi'        =>  \$gssapi,
 		'-p=i',           =>  \$port,
 		'--port=i',       =>  \$port,
+		'-i',             =>  \$noidn,
+		'--noidn',        =>  \$noidn,
 	)) {
 	usage(1);
 };
@@ -70,6 +73,7 @@ push @dig, "\@$nameserver" if ($nameserver);
 push @dig, "\@localhost" if ($local);
 push @dig, "-k", $keyfile if ($keyfile);
 push @dig, "-p", $port if ($port);
+push @dig, "+noidnout", if ($noidn);
 
 my @nsupdate = qw(nsupdate);
 push @nsupdate, "-l" if ($local);
