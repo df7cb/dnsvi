@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (c) 2014-2017 Christoph Berg <myon@debian.org>
+# Copyright (c) 2014-2019 Christoph Berg <myon@debian.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ my $local;
 my $gssapi;
 my $nameserver;
 my $port;
-my $noidn;
+my $noidnout;
 
 Getopt::Long::config('bundling');
 if (!GetOptions (
@@ -52,8 +52,8 @@ if (!GetOptions (
 		'--gssapi'        =>  \$gssapi,
 		'-p=i',           =>  \$port,
 		'--port=i',       =>  \$port,
-		'-i',             =>  \$noidn,
-		'--noidn',        =>  \$noidn,
+		'-i',             =>  \$noidnout,
+		'--noidnout',     =>  \$noidnout,
 	)) {
 	usage(1);
 };
@@ -73,7 +73,7 @@ push @dig, "\@$nameserver" if ($nameserver);
 push @dig, "\@localhost" if ($local);
 push @dig, "-k", $keyfile if ($keyfile);
 push @dig, "-p", $port if ($port);
-push @dig, "+noidnout", if ($noidn);
+push @dig, "+noidnout" if ($noidnout);
 
 my @nsupdate = qw(nsupdate);
 push @nsupdate, "-l" if ($local);
@@ -294,7 +294,7 @@ dnsvi - Edit dynamic DNS zones using vi
 
 =head1 SYNOPSIS
 
-B<dnsvi> [B<-l>] [B<-k> I<keyfile>] [B<-g>] [B<-p> I<port>] [B<@>I<nameserver>] I<zone>
+B<dnsvi> [B<-igl>] [B<-k> I<keyfile>] [B<-p> I<port>] [B<@>I<nameserver>] I<zone>
 
 =head1 DESCRIPTION
 
@@ -306,6 +306,12 @@ editor, and upon completion, builds a list of "B<update add>" and
 =head1 OPTIONS
 
 =over 4
+
+=item B<-i> B<--noidnout>
+
+If you are updating a punycode domain and you are using bind9 >= 9.14.0, you
+need to specify B<-i> to be able to update the zone, otherwise there will be a
+mix of punycode and non-punycode domains which nsupdate will refuse.
 
 =item B<-l>
 

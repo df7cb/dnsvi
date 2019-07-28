@@ -8,7 +8,7 @@ feed to nsupdate.
 
 Usage:
 
-    ./dnsvi [-l] [-k keyfile] [-g] [-p port] [@nameserver] [-i] <zone>
+    ./dnsvi [-igl] [-k keyfile] [-p port] [@nameserver] <zone>
 
 Dependencies:
 
@@ -33,10 +33,12 @@ Screenshot
 
     [S]end, [e]dit, send and edit [a]gain, [q]uit: [s]
 
-Notes
------
+IDN Support
+-----------
 
-If you're updating a punycode domain and you're using bind9 >= 9.14.0 you'll need to specify `-i` to be able to update the zone, otherwise there will be a mix of punycode and non-punycode domain format.
+If you are updating a punycode domain and you are using bind9 >= 9.14.0, you
+need to specify `-i` to be able to update the zone, otherwise there will be a
+mix of punycode and non-punycode domains which nsupdate will refuse.
 
 Author
 ------
