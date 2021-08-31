@@ -4,9 +4,9 @@ Priority: optional
 Maintainer: Christoph Berg <myon@debian.org>
 Standards-Version: 4.1.1
 Build-Depends: debhelper-compat (= 12)
-Homepage: https://github.com/ChristophBerg/dnsvi
-Vcs-Git: https://github.com/ChristophBerg/dnsvi.git
-Vcs-Browser: https://github.com/ChristophBerg/dnsvi
+Homepage: https://github.com/df7cb/dnsvi
+Vcs-Git: https://github.com/df7cb/dnsvi.git
+Vcs-Browser: https://github.com/df7cb/dnsvi
 
 Package: dnsvi
 Architecture: all

@@ -1,7 +1,11 @@
 dnsvi (1.4) UNRELEASED; urgency=medium
 
+  [ Debian Janitor ]
   * Update standards version, no changes needed.
   * Bump debhelper from old 10 to 12.
+
+  [ Christoph Berg ]
+  * Update package URLs.
 
  -- Debian Janitor <janitor@jelmer.uk>  Fri, 18 Oct 2019 10:54:18 +0000
 

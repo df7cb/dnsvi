@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: dnsvi
-Source: https://github.com/ChristophBerg/dnsvi
+Source: https://github.com/df7cb/dnsvi
 
 Files: *
 Copyright: 2014-2016 (C) Christoph Berg <myon@debian.org>
