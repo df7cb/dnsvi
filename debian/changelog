@@ -1,3 +1,9 @@
+dnsvi (1.5) unstable; urgency=medium
+
+  * Depend on bind9-dnsutils instead of dnsutils. (Closes: #1094943)
+
+ -- Christoph Berg <myon@debian.org>  Mon, 10 Feb 2025 10:15:18 +0100
+
 dnsvi (1.4) unstable; urgency=medium
 
   [ Debian Janitor ]
